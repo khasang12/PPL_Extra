@@ -1,0 +1,14 @@
+main: function void () {
+            a,b,c: integer = 1,2,3; // [] [a] [a,b]
+            d: integer = a + b; //3 [a,b,c]
+            e: integer = a + c; //4 [c,a,d]
+            f: integer = d + a; //5 [c,a,d]
+            g: integer = d; //3 [c,a,d,f]
+            e = c; //3 [c,a,d,f] 
+            h: integer = a + d; //4 [c,a,d,f]
+            i: integer = f + 1; //6 [c,h,f]
+            j,l: integer = h,i; //4,6 [c,h,i] [c,i] 
+            k: integer = c; //3 [c]
+            h = h + k; //7 [k]
+            printInteger(h); // [h,k]
+        }

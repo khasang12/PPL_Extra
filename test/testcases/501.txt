@@ -1,0 +1,6 @@
+main: function void () {
+            a,b,c: integer = 1,2,3;
+            d: integer = 4; // [a,b]
+            d = a + b; // [a,b]
+            printInteger(d); // [a,b,d]
+        }

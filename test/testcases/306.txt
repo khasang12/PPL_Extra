@@ -1,0 +1,4 @@
+int main() {
+            a,b,c: int = 2,3,4;
+            putIntLn(a+b+c);
+        }

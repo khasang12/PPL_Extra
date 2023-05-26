@@ -1,0 +1,7 @@
+main: function void() {
+            a,b,c: integer;
+            a = 1;
+            b = a + b;
+            c = a + c;
+            printInteger(a+b+c);
+        }
