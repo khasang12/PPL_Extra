@@ -41,6 +41,26 @@ class IdentifierCollector(Visitor, Utils):
 
     def visitFuncDecl(self, ast, param):
         self.visit(ast.body,param)
+    
+    def visitIfStmt(self, ast, param):
+        self.visit(ast.cond,param)
+        self.visit(ast.tstmt,param)
+        
+        if ast.fstmt: self.visit(ast.fstmt,param)
+    
+    def visitForStmt(self, ast, param):
+        self.visit(ast.init,param) # assign
+        self.visit(AssignStmt(ast.init.lhs,ast.upd),param) # assign
+        self.visit(ast.cond,param)
+        self.visit(ast.stmt,param)
+
+    def visitWhileStmt(self, ast, param):
+        self.visit(ast.cond,param)
+        self.visit(ast.stmt,param)
+
+    def visitDoWhileStmt(self, ast, param):
+        self.visit(ast.cond,param)
+        self.visit(ast.stmt,param)
 
     def visitProgram(self, ast, param):
         for stmtdecl in ast.decls:
@@ -89,18 +109,6 @@ class IdentifierCollector(Visitor, Utils):
         pass
     
     def visitFuncCall(self, ast, param):
-        pass
-
-    def visitIfStmt(self, ast, param):
-        pass
-    
-    def visitForStmt(self, ast, param):
-        pass
-
-    def visitWhileStmt(self, ast, param):
-        pass
-
-    def visitDoWhileStmt(self, ast, param):
         pass
 
     def visitBreakStmt(self, ast, param):

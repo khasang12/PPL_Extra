@@ -133,38 +133,6 @@ class MachineCode(ABC):
     def emitIREM(self):
         pass
     @abstractmethod
-    def emitIFACMPEQ(self, label):
-        #label: Int
-        pass
-    @abstractmethod
-    def emitIFACMPNE(self, label):
-        #label: Int
-        pass
-    @abstractmethod
-    def emitIFICMPEQ(self, label):
-        #label: Int
-        pass
-    @abstractmethod
-    def emitIFICMPNE(self, label):
-        #label: Int
-        pass
-    @abstractmethod
-    def emitIFICMPLT(self, label):
-        #label: Int
-        pass
-    @abstractmethod
-    def emitIFICMPLE(self, label):
-        #label: Int
-        pass
-    @abstractmethod
-    def emitIFICMPGT(self, label):
-        #label: Int
-        pass
-    @abstractmethod
-    def emitIFICMPGE(self, label):
-        #label: Int
-        pass
-    @abstractmethod
     def emitIFEQ(self, label):
         #label: Int
         pass
@@ -318,6 +286,23 @@ class MachineCode(ABC):
     @abstractmethod
     def emitARETURN(self):
         pass
+    @abstractmethod
+    def emitBLEZ(self, label):
+        pass
+    @abstractmethod
+    def emitBLTZ(self, label):
+        pass
+    @abstractmethod
+    def emitBGEZ(self, label):
+        pass
+    def emitBGTZ(self, label):
+        pass
+    @abstractmethod
+    def emitBEQ(self, label):
+        pass
+    @abstractmethod
+    def emitBNE(self, label):
+        pass
 
 class MIPSCode(MachineCode):
     END = "\n"
@@ -458,37 +443,29 @@ class MIPSCode(MachineCode):
     def emitIREM(self):
         return MIPSCode.INDENT + "div"
     
-    def emitIFACMPEQ(self, label):
+    def emitBLEZ(self, label):
         #label: Int
-        return MIPSCode.INDENT + "if_acmpeq Label" + str(label) + MIPSCode.END
+        return MIPSCode.INDENT + "slt $t1, $zero, $t0" + MIPSCode.END
     
-    def emitIFACMPNE(self, label):
+    def emitBLTZ(self, label):
         #label: Int
-        return MIPSCode.INDENT + "if_acmpne Label" + str(label) + MIPSCode.END
+        return MIPSCode.INDENT + "slt $t1, $zero, $t0" + MIPSCode.END
     
-    def emitIFICMPEQ(self, label):
+    def emitBGEZ(self, label):
         #label: Int
-        return MIPSCode.INDENT + "if_icmpeq Label" + str(label) + MIPSCode.END
+        return MIPSCode.INDENT + "slt $t1, $t0, $zero" + MIPSCode.END
     
-    def emitIFICMPNE(self, label):
+    def emitBGTZ(self, label):
         #label: Int
-        return MIPSCode.INDENT + "if_icmpne Label" + str(label) + MIPSCode.END
+        return MIPSCode.INDENT + "slt $t1, $zero, $t0" + MIPSCode.END
     
-    def emitIFICMPLT(self, label):
+    def emitBEQ(self, label):
         #label: Int
-        return MIPSCode.INDENT + "if_icmplt Label" + str(label) + MIPSCode.END
+        return MIPSCode.INDENT + "beq $t1, $zero, Label" + str(label) + MIPSCode.END
     
-    def emitIFICMPLE(self, label):
+    def emitBNE(self, label):
         #label: Int
-        return MIPSCode.INDENT + "if_icmple Label" + str(label) + MIPSCode.END
-    
-    def emitIFICMPGT(self, label):
-        #label: Int
-        return MIPSCode.INDENT + "if_icmpgt Label" + str(label) + MIPSCode.END
-    
-    def emitIFICMPGE(self, label):
-        #label: Int
-        return MIPSCode.INDENT + "if_icmpge Label" + str(label) + MIPSCode.END
+        return MIPSCode.INDENT + "bne $t1, $zero, Label" + str(label) + MIPSCode.END
     
     def emitIFEQ(self, label):
         #label: Int
@@ -504,7 +481,7 @@ class MIPSCode(MachineCode):
     
     def emitIFLE(self, label):
         #label: Int
-        return MIPSCode.INDENT + "ifle Label" + str(label) + MIPSCode.END
+        return MIPSCode.INDENT + "bne $t1, $zero, Label" + str(label) + MIPSCode.END
     
     def emitIFGT(self, label):
         #label: Int
@@ -520,7 +497,7 @@ class MIPSCode(MachineCode):
     
     def emitGOTO(self, label):
         #label: Int
-        return MIPSCode.INDENT + "goto Label" + label + MIPSCode.END
+        return MIPSCode.INDENT + "j Label" + str(label) + MIPSCode.END
     
     def emitINEG(self):
         return MIPSCode.INDENT + "subu"
@@ -560,6 +537,11 @@ class MIPSCode(MachineCode):
     def emitINVOKESTATIC(self, lexeme, typ, reg):
         #lexeme: String
         #typ: String
+        if reg == 10: # literal
+            load = MIPSCode.INDENT + "addi $a0, $t0, 0" + MIPSCode.END
+            opcode = MIPSCode.INDENT + "li $v0, 1" + MIPSCode.END
+            syscall = MIPSCode.INDENT + "syscall" + MIPSCode.END
+            return load + opcode + syscall
         if lexeme == "io/printInteger" or lexeme == "io/printBoolean":
             load = MIPSCode.INDENT + "addi $a0, $s" + str(reg) + " ,0" + MIPSCode.END
             opcode = MIPSCode.INDENT + "li $v0, 1" + MIPSCode.END

@@ -182,11 +182,6 @@ class CodeGenVisitor(Visitor):
         e = SubBody(None, premenv.env.sym)
         for x in ast.decls:
             e = self.visit(x, e)
-        # e.sym now contains only global_var
-        # e.sym = list(filter(lambda x: type(x.mtype) is not MType, e.sym))
-        # generate default constructor
-        #self.genMETHOD(FuncDecl("<init>", None, list(), None,BlockStmt([])), c, Frame("<init>", VoidType))
-        #self.genMETHOD(FuncDecl("<clinit>", None, list(), None,BlockStmt([])), e, Frame("<clinit>", VoidType))
         self.emit.emitEPILOG()
         return c
 
@@ -210,8 +205,6 @@ class CodeGenVisitor(Visitor):
 
         # Generate code for other declarations
         if isInit:
-            ''' self.emit.printout(self.emit.emitVAR(frame.getNewIndex(), "this", ClassType(
-                self.className), frame.getStartLabel(), frame.getEndLabel(), frame)) '''
             pass
         elif isClinit:
             for global_var in o.sym:
@@ -223,8 +216,6 @@ class CodeGenVisitor(Visitor):
                 code += self.emit.emitPUTSTATIC(self.className + "." + global_var.name, global_var.mtype, frame)
                 self.emit.printout(code)
         elif isMain:
-            ''' self.emit.printout(self.emit.emitVAR(frame.getNewIndex(), "args", ArrayType(
-                [0], StringType()), frame.getStartLabel(), frame.getEndLabel(), frame, 0)) '''
             pass
         else:
             if consdecl.params:
@@ -233,14 +224,6 @@ class CodeGenVisitor(Visitor):
                 glenv = local.sym+glenv
 
         body = consdecl.body
-        #self.emit.printout(self.emit.emitLABEL(frame.getStartLabel(), frame))
-
-        # Generate code for statements
-        if isInit:
-            ''' self.emit.printout(self.emit.emitREADVAR(
-                "this", ClassType(Id(self.className)), 0, frame))
-            self.emit.printout(self.emit.emitINVOKESPECIAL(frame)) '''
-            pass
             
         env = SubBody(frame, glenv)
         retCheck = False
@@ -260,10 +243,6 @@ class CodeGenVisitor(Visitor):
                 if x.out:
                     self.visit(AssignStmt(ArrayCell(consdecl.name+"_"+x.name,[IntegerLit(0)]),Id(x.name)),env)
 
-        #self.emit.printout(self.emit.emitLABEL(frame.getEndLabel(), frame))
-        ''' if type(return_type) is VoidType:
-            self.emit.printout(self.emit.emitRETURN(VoidType(), frame))
-        self.emit.printout(self.emit.emitENDMETHOD(frame)) '''
         frame.exitScope()
 
     def visitFuncDecl(self, ast, o):
@@ -302,10 +281,6 @@ class CodeGenVisitor(Visitor):
             self.visit(AssignStmt(Id(ast.name),init),o)
         if ast.init:
             self.visit(AssignStmt(Id(ast.name),ast.init),o)
-        ''' else: #global
-            o.sym = [Symbol(ast.name,ast.typ,CName(self.className), ast.init if ast.init else self.getDefaultAtomicData(ast.typ))] + o.sym
-            self.emit.printout(self.emit.emitATTRIBUTE(ast.name,ast.typ,False,""))
-            code = SubBody(None, o.sym) '''
         return code
     
     def visitAssignStmt(self, ast, o):
@@ -367,12 +342,20 @@ class CodeGenVisitor(Visitor):
     def visitIfStmt(self, ast, o):
         #expr
         exp_c, exp_t = self.visit(ast.cond, Access(o.frame,o.sym,False,True))
-        self.emit.printout(exp_c)
-        
+        if hasattr(ast.cond.left,"val"):
+            self.emit.printout("\tli $t0, {}\n".format(ast.cond.left.val))
+            self.emit.printout("\tsub $t0, $t0, {}\n".format(exp_c[2]))
+        if hasattr(ast.cond.right,"val"):
+            self.emit.printout("\tli $t0, {}\n".format(ast.cond.right.val))
+            self.emit.printout("\tsub $t0, {}, $t0\n".format(exp_c[1]))
+        if not hasattr(ast.cond.left,"val") and not hasattr(ast.cond.right,"val"):
+            self.emit.printout("\tsub $t0, {}, {}\n".format(exp_c[1],exp_c[2]))
+        self.emit.printout(exp_c[0])
+
         #fLabel
         fLabel = o.frame.getNewLabel()
         # skip to fLabel if False
-        self.emit.printout(self.emit.emitIFFALSE(fLabel,o.frame))
+        self.emit.printout(self.emit.emitIFFALSE(fLabel,o.frame,ast.cond.op))
         # tstmt
         self.visit(ast.tstmt,o)
         # fstmt 
@@ -396,6 +379,9 @@ class CodeGenVisitor(Visitor):
             self.emit.printout(code)
             
     def visitForStmt(self, ast, o):
+        if type(ast.cond.left) is Id and ast.cond.left.name not in self.id_map: return
+        if type(ast.cond.right) is Id and ast.cond.right.name not in self.id_map: return
+        
         # Initial
         self.visit(ast.init, o)
         
@@ -409,9 +395,18 @@ class CodeGenVisitor(Visitor):
         
         # Condition Check
         self.emit.printout(self.emit.emitLABEL(chkLabel, o.frame))
-        ccode,ctyp = self.visit(ast.cond, Access(o.frame, o.sym, False, True))
-        self.emit.printout(ccode)
-        self.emit.printout(self.emit.emitIFFALSE(brkLabel,o.frame))
+        ec, et = self.visit(ast.cond, Access(o.frame, o.sym, False, True))
+        if hasattr(ast.cond.left,"val"):
+            self.emit.printout("\tli $t0, {}\n".format(ast.cond.left.val))
+            self.emit.printout("\tsub $t0, $t0, {}\n".format(ec[2]))
+        if hasattr(ast.cond.right,"val"):
+            self.emit.printout("\tli $t0, {}\n".format(ast.cond.right.val))
+            self.emit.printout("\tsub $t0, {}, $t0\n".format(ec[1]))
+        if not hasattr(ast.cond.left,"val") and not hasattr(ast.cond.right,"val"):
+            self.emit.printout("\tsub $t0, {}, {}\n".format(exp_c[1],exp_c[2]))
+        self.emit.printout(ec[0])
+        
+        self.emit.printout(self.emit.emitIFFALSE(brkLabel,o.frame,ast.cond.op))
         
         # Body
         self.emit.printout(self.emit.emitLABEL(bodyLabel, o.frame))
@@ -432,6 +427,8 @@ class CodeGenVisitor(Visitor):
         o.frame.exitLoop()
     
     def visitWhileStmt(self, ast, o):
+        if type(ast.cond.left) is Id and ast.cond.left.name not in self.id_map: return
+        if type(ast.cond.right) is Id and ast.cond.right.name not in self.id_map: return
         o.frame.enterLoop()
         # cont, break
         cntLabel = o.frame.getContinueLabel()
@@ -441,9 +438,18 @@ class CodeGenVisitor(Visitor):
         self.emit.printout(code)
         # expr
         ec, et = self.visit(ast.cond, Access(o.frame, o.sym, False))
-        self.emit.printout(ec)
+        if hasattr(ast.cond.left,"val"):
+            self.emit.printout("\tli $t0, {}\n".format(ast.cond.left.val))
+            self.emit.printout("\tsub $t0, $t0, {}\n".format(ec[2]))
+        if hasattr(ast.cond.right,"val"):
+            self.emit.printout("\tli $t0, {}\n".format(ast.cond.right.val))
+            self.emit.printout("\tsub $t0, {}, $t0\n".format(ec[1]))
+        if not hasattr(ast.cond.left,"val") and not hasattr(ast.cond.right,"val"):
+            self.emit.printout("\tsub $t0, {}, {}\n".format(exp_c[1],exp_c[2]))
+        self.emit.printout(ec[0])
+        
         # break if False
-        code = self.emit.emitIFFALSE(brkLabel, o.frame)
+        code = self.emit.emitIFFALSE(brkLabel, o.frame, ast.cond.op)
         self.emit.printout(code)
         # stmt
         self.visit(ast.stmt,o)
@@ -457,6 +463,9 @@ class CodeGenVisitor(Visitor):
         o.frame.exitLoop()
     
     def visitDoWhileStmt(self, ast, o):
+        if type(ast.cond.left) is Id and ast.cond.left.name not in self.id_map: return
+        if type(ast.cond.right) is Id and ast.cond.right.name not in self.id_map: return
+        
         o.frame.enterLoop()
         # cont, break
         cntLabel = o.frame.getContinueLabel()
@@ -471,9 +480,16 @@ class CodeGenVisitor(Visitor):
         
         # expr
         ec, et = self.visit(ast.cond, Access(o.frame, o.sym, False))
-        self.emit.printout(ec)
+        if hasattr(ast.cond.left,"val"):
+            self.emit.printout("\tli $t0, {}\n".format(ast.cond.left.val))
+            self.emit.printout("\tsub $t0, $t0, {}\n".format(ec[2]))
+        if hasattr(ast.cond.right,"val"):
+            self.emit.printout("\tli $t0, {}\n".format(ast.cond.right.val))
+            self.emit.printout("\tsub $t0, {}, $t0\n".format(ec[1]))
+        self.emit.printout(ec[0])
+        
         # break if False
-        code = self.emit.emitIFFALSE(brkLabel, o.frame)
+        code = self.emit.emitIFFALSE(brkLabel, o.frame, ast.cond.op)
         self.emit.printout(code)
         
         # Jump to cont
@@ -527,7 +543,12 @@ class CodeGenVisitor(Visitor):
                     if type(paramtyp) is FloatType and type(typ1) is IntegerType:
                         str1 = str1 + self.emit.emitI2F(frame)
                 in_ = (in_[0] + str1, in_[1]+[typ1])
-            self.emit.printout(self.emit.emitINVOKESTATIC(
+            if type(ast.args[0]) is not Id:
+                self.emit.printout("\tli $t0, {}\n".format(ast.args[0].val.val)) if hasattr(ast.args[0].val,"val") else self.emit.printout("\tli $t0, {}\n".format(ast.args[0].val))
+                self.emit.printout(self.emit.emitINVOKESTATIC(
+                cname + "/" + ast.name, ctype, frame, 10))
+            else:
+                self.emit.printout(self.emit.emitINVOKESTATIC(
                 cname + "/" + ast.name, ctype, frame, self.id_map[ast.args[0].name]))
             
             for i,x in enumerate(sym.mtype.partype):

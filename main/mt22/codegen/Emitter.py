@@ -281,7 +281,7 @@ class Emitter():
         # frame: Frame
 
         typ = in_
-        list(map(lambda x: frame.pop(), typ.partype))
+        #list(map(lambda x: frame.pop(), typ.partype))
         if not type(typ.rettype) is VoidType:
             frame.push()
         return self.mips.emitINVOKESTATIC(lexeme, "",num)
@@ -435,28 +435,25 @@ class Emitter():
 
         result = list()
         labelF = frame.getNewLabel()
-        labelO = frame.getNewLabel()
 
-        frame.pop()
-        frame.pop()
         if op == ">":
-            result.append(self.mips.emitIFICMPLE(labelF))
+            result.append(self.mips.emitBLEZ(labelF))
         elif op == ">=":
-            result.append(self.mips.emitIFICMPLT(labelF))
+            result.append(self.mips.emitBLTZ(labelF))
         elif op == "<":
-            result.append(self.mips.emitIFICMPGE(labelF))
+            result.append(self.mips.emitBGEZ(labelF))
         elif op == "<=":
-            result.append(self.mips.emitIFICMPGT(labelF))
+            result.append(self.mips.emitBGTZ(labelF))
         elif op == "!=":
-            result.append(self.mips.emitIFICMPEQ(labelF))
+            result.append("\taddi $t1, $t0, 0\n")
         elif op == "==":
-            result.append(self.mips.emitIFICMPNE(labelF))
-        result.append(self.emitPUSHCONST("1", IntegerType(), frame))
-        frame.pop()
-        result.append(self.emitGOTO(labelO, frame))
-        result.append(self.emitLABEL(labelF, frame))
-        result.append(self.emitPUSHCONST("0", IntegerType(), frame))
-        result.append(self.emitLABEL(labelO, frame))
+            result.append("\taddi $t1, $t0, 0\n")
+        #result.append(self.emitPUSHCONST("1", IntegerType(), frame))
+        #frame.pop()
+        #result.append(self.emitGOTO(labelO, frame))
+        #result.append(self.emitLABEL(labelF, frame))
+        #result.append(self.emitPUSHCONST("0", IntegerType(), frame))
+        #result.append(self.emitLABEL(labelO, frame))
         return ''.join(result)
 
     def emitRELOP(self, op, in_, trueLabel, falseLabel, frame):
@@ -545,12 +542,14 @@ class Emitter():
     *   @param label the label where the execution continues if the value on top of stack is false.
     '''
 
-    def emitIFFALSE(self, label, frame):
+    def emitIFFALSE(self, label, frame, op):
         # label: Int
         # frame: Frame
 
-        frame.pop()
-        return self.mips.emitIFLE(label)
+        #frame.pop()
+        if op in [">=","<=","=="]:
+            return self.mips.emitBNE(label)
+        return self.mips.emitBEQ(label)
 
     def emitIFICMPGT(self, label, frame):
         # label: Int

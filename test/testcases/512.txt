@@ -1,0 +1,5 @@
+main: function void () {
+            a: integer = 1;
+            if(a>0) printInteger(1);
+            else printInteger(0);
+        }

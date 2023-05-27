@@ -43,7 +43,7 @@ class LivenessAnalysis:
                         break
                 temp2 = []
             # add final variable
-            if i == len(self.topology)-1 and self.topology[i][1] not in temp:
+            if i == len(self.topology)-1 and len(self.topology[i])>1 and self.topology[i][1] not in temp:
                 temp = temp + [self.topology[i][1]] # skip printing function
             # deep copy
             out.append(temp[:]) 
