@@ -1,6 +1,5 @@
-void main() {
-            a,b,c: int = 1,2,3;
-            d: int = 4;
-            d = a+b;
-            putInt(d);
+main: function void () {
+            a,b: integer = 3,2;
+            a = a*b;
+            printInteger(a); // [a,b]
         }

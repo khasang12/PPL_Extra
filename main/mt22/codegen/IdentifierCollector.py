@@ -1,5 +1,6 @@
 from Utils import *
 from Visitor import *
+from AST import *
 
 class IdentifierCollector(Visitor, Utils):
     def __init__(self):
@@ -23,6 +24,15 @@ class IdentifierCollector(Visitor, Utils):
     def visitBlockStmt(self, ast, param):
         for stmtdecl in ast.body:
             self.visit(stmtdecl,param)
+    
+    def visitCallStmt(self, ast, param):
+        for p in ast.args:
+            self.visit(p,param)
+    
+    def visitFuncCall(self, ast, param):
+        self.identifiers += [[ast.name]]
+        for p in ast.args:
+            self.visit(p,param)
             
     def visitVarDecl(self, ast, param):
         self.identifiers += [[ast.name]]
@@ -60,8 +70,6 @@ class IdentifierCollector(Visitor, Utils):
     def visitVoidType(self, ast, param):
         pass
     
-    
-    
     def visitArrayCell(self, ast, param):
         pass
     
@@ -82,8 +90,6 @@ class IdentifierCollector(Visitor, Utils):
     
     def visitFuncCall(self, ast, param):
         pass
-    
-    
 
     def visitIfStmt(self, ast, param):
         pass
@@ -104,9 +110,6 @@ class IdentifierCollector(Visitor, Utils):
         pass
 
     def visitReturnStmt(self, ast, param):
-        pass
-
-    def visitCallStmt(self, ast, param):
         pass
 
     

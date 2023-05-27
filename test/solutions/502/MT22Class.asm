@@ -1,4 +1,4 @@
-# preamble
+# premable
 main:
 	li $s0, 1
 	li $s1, 2

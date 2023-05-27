@@ -1,0 +1,5 @@
+main: function void () {
+            a: integer = -6;
+            a = -a;
+            printInteger(a);
+        }

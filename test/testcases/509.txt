@@ -1,0 +1,9 @@
+main: function void () {
+            a,b: boolean = true, false;
+            a = a && b;
+            b = a || b;
+            a = a && true;
+            b = b || false;
+            printBoolean(a);
+            printBoolean(b);
+        }

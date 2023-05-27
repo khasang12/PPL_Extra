@@ -15,7 +15,7 @@ class LivenessAnalysis:
         out = [] # return
         temp = []
         temp2 = []
-        print(self.topology)
+
         for i in range(0,len(self.topology)):
             # Prelim check: Add reused variables
             for next in range(i+1,len(self.topology)):
@@ -43,8 +43,8 @@ class LivenessAnalysis:
                         break
                 temp2 = []
             # add final variable
-            if i == len(self.topology)-1 and self.topology[i][0] not in temp:
-                temp.append(self.topology[i][0])
+            if i == len(self.topology)-1 and self.topology[i][1] not in temp:
+                temp = temp + [self.topology[i][1]] # skip printing function
             # deep copy
             out.append(temp[:]) 
         return out

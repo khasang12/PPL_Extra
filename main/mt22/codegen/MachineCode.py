@@ -357,37 +357,28 @@ class MIPSCode(MachineCode):
         #in_: Int
         return "$s"+str(num)
     
-    def emitFLOAD(self, in_):
-        #in_: Int
-        if in_ >= 0 and in_ <= 3:
-            return MIPSCode.INDENT + "fload_" + str(in_) + MIPSCode.END
-        else:
-            return MIPSCode.INDENT + "fload " +str(in_) + MIPSCode.END
-    
-    def emitISTORE(self, in_,num):
+    def emitFLOAD(self, in_, num):
         #in_: Int
         return "$s"+str(num)
     
-    def emitFSTORE(self, in_):
+    def emitISTORE(self, in_, num):
         #in_: Int
-        if in_ >= 0 and in_ <= 3:
-            return MIPSCode.INDENT + "fstore_" + str(in_) + MIPSCode.END
-        else:
-            return MIPSCode.INDENT + "fstore " +str(in_) + MIPSCode.END
+        return "$s"+str(num)
     
-    def emitALOAD(self, in_):
+    def emitFSTORE(self, in_, num):
         #in_: Int
-        if in_ >= 0 and in_ <= 3:
-            return MIPSCode.INDENT + "aload_" + str(in_) + MIPSCode.END
-        else:
-            return MIPSCode.INDENT + "aload " +str(in_) + MIPSCode.END
+        return "$s"+str(num)
     
-    def emitASTORE(self, in_):
+    def emitALOAD(self, in_, num):
+        return "$s"+str(num)
+    
+    def emitASTORE(self, in_, num):
         #in_: Int
-        if in_ >= 0 and in_ <= 3:
+        return "$s"+str(num)
+        ''' if in_ >= 0 and in_ <= 3:
             return MIPSCode.INDENT + "astore_" + str(in_) + MIPSCode.END
         else:
-            return MIPSCode.INDENT + "astore " +str(in_) + MIPSCode.END
+            return MIPSCode.INDENT + "astore " +str(in_) + MIPSCode.END '''
     
     def emitIASTORE(self):
         return MIPSCode.INDENT + "iastore" + MIPSCode.END
@@ -435,37 +426,37 @@ class MIPSCode(MachineCode):
         return MIPSCode.INDENT + "putfield "  + lexeme + " " + typ + MIPSCode.END
     
     def emitIADD(self):
-        return MIPSCode.INDENT + "add" + MIPSCode.END
+        return MIPSCode.INDENT + "add"
     
     def emitFADD(self):
-        return MIPSCode.INDENT + "fadd" + MIPSCode.END
+        return MIPSCode.INDENT + "add.s"
     
     def emitISUB(self):
-        return MIPSCode.INDENT + "isub" + MIPSCode.END
+        return MIPSCode.INDENT + "sub"
     
     def emitFSUB(self):
-        return MIPSCode.INDENT + "fsub" + MIPSCode.END
+        return MIPSCode.INDENT + "sub.s"
     
     def emitIMUL(self):
-        return MIPSCode.INDENT + "imul" + MIPSCode.END
+        return MIPSCode.INDENT + "mult"
     
     def emitFMUL(self):
-        return MIPSCode.INDENT + "fmul" + MIPSCode.END
+        return MIPSCode.INDENT + "mult.s"
     
     def emitIDIV(self):
-        return MIPSCode.INDENT + "idiv" + MIPSCode.END
+        return MIPSCode.INDENT + "div"
     
     def emitFDIV(self):
-        return MIPSCode.INDENT + "fdiv" + MIPSCode.END
+        return MIPSCode.INDENT + "div.s"
     
     def emitIAND(self):
-        return MIPSCode.INDENT + "iand" + MIPSCode.END
+        return MIPSCode.INDENT + "and"
     
     def emitIOR(self):
-        return MIPSCode.INDENT + "ior" + MIPSCode.END
+        return MIPSCode.INDENT + "or"
     
     def emitIREM(self):
-        return MIPSCode.INDENT + "rem" + MIPSCode.END
+        return MIPSCode.INDENT + "div"
     
     def emitIFACMPEQ(self, label):
         #label: Int
@@ -532,10 +523,10 @@ class MIPSCode(MachineCode):
         return MIPSCode.INDENT + "goto Label" + label + MIPSCode.END
     
     def emitINEG(self):
-        return MIPSCode.INDENT + "ineg" + MIPSCode.END
+        return MIPSCode.INDENT + "subu"
     
     def emitFNEG(self):
-        return MIPSCode.INDENT + "fneg" + MIPSCode.END
+        return MIPSCode.INDENT + "subu"
     
     def emitDUP(self):
         return MIPSCode.INDENT + "dup" + MIPSCode.END
@@ -569,9 +560,19 @@ class MIPSCode(MachineCode):
     def emitINVOKESTATIC(self, lexeme, typ, reg):
         #lexeme: String
         #typ: String
-        if lexeme == "printInteger":
-            load = MIPSCode.INDENT + "addi $a0, " + reg + " ,0" + MIPSCode.END
+        if lexeme == "io/printInteger" or lexeme == "io/printBoolean":
+            load = MIPSCode.INDENT + "addi $a0, $s" + str(reg) + " ,0" + MIPSCode.END
             opcode = MIPSCode.INDENT + "li $v0, 1" + MIPSCode.END
+            syscall = MIPSCode.INDENT + "syscall" + MIPSCode.END
+            return load + opcode + syscall
+        if lexeme == "io/printString":
+            load = MIPSCode.INDENT + "addi $a0, $s" + str(reg) + " ,0" + MIPSCode.END
+            opcode = MIPSCode.INDENT + "li $v0, 4" + MIPSCode.END
+            syscall = MIPSCode.INDENT + "syscall" + MIPSCode.END
+            return load + opcode + syscall
+        if lexeme == "io/writeFloat":
+            load = MIPSCode.INDENT + "addi $a0, $s" + str(reg) + " ,0" + MIPSCode.END
+            opcode = MIPSCode.INDENT + "li $v0, 2" + MIPSCode.END
             syscall = MIPSCode.INDENT + "syscall" + MIPSCode.END
             return load + opcode + syscall
     
@@ -609,18 +610,20 @@ class MIPSCode(MachineCode):
         #in_: Int
         return ".limit locals " + str(in_) + MIPSCode.END
     
-    def emitVAR(self, in_, varName, inType, fromLabel, toLabel):
+    def emitVAR(self, in_, varName, inType, fromLabel, toLabel, num):
         #in_: Int
         #varName: String
         #inType: String
         #fromLabel: Int
         #toLabel: Int
-        return ".var " + str(in_) + " is " + varName + " " + inType + " from Label" + str(fromLabel) + " to Label" + str(toLabel) + MIPSCode.END 
+        #return ".var " + str(in_) + " is " + varName + " " + inType + " from Label" + str(fromLabel) + " to Label" + str(toLabel) + MIPSCode.END 
+        return "lw $s{}, 0".format(num) + MIPSCode.END
     
-    def emitMETHOD(self, lexeme, typ, isStatic):
+    def emitMETHOD(self, lexeme, isStatic):
         #lexeme: String
         #typ: String
         #isStaic: Boolean
+        return MIPSCode.END + lexeme + ":" + MIPSCode.END
         if isStatic:
             return MIPSCode.END + lexeme + ":" + MIPSCode.END
         else:
@@ -802,37 +805,37 @@ class JasminCode(MachineCode):
         return JasminCode.INDENT + "putfield "  + lexeme + " " + typ + JasminCode.END
     
     def emitIADD(self):
-        return JasminCode.INDENT + "iadd" + JasminCode.END
+        return JasminCode.INDENT + "iadd"
     
     def emitFADD(self):
-        return JasminCode.INDENT + "fadd" + JasminCode.END
+        return JasminCode.INDENT + "fadd"
     
     def emitISUB(self):
-        return JasminCode.INDENT + "isub" + JasminCode.END
+        return JasminCode.INDENT + "isub"
     
     def emitFSUB(self):
-        return JasminCode.INDENT + "fsub" + JasminCode.END
+        return JasminCode.INDENT + "fsub"
     
     def emitIMUL(self):
-        return JasminCode.INDENT + "imul" + JasminCode.END
+        return JasminCode.INDENT + "imul"
     
     def emitFMUL(self):
-        return JasminCode.INDENT + "fmul" + JasminCode.END
+        return JasminCode.INDENT + "fmul"
     
     def emitIDIV(self):
-        return JasminCode.INDENT + "idiv" + JasminCode.END
+        return JasminCode.INDENT + "idiv"
     
     def emitFDIV(self):
-        return JasminCode.INDENT + "fdiv" + JasminCode.END
+        return JasminCode.INDENT + "fdiv"
     
     def emitIAND(self):
-        return JasminCode.INDENT + "iand" + JasminCode.END
+        return JasminCode.INDENT + "iand"
     
     def emitIOR(self):
-        return JasminCode.INDENT + "ior" + JasminCode.END
+        return JasminCode.INDENT + "ior"
     
     def emitIREM(self):
-        return JasminCode.INDENT + "rem" + JasminCode.END
+        return JasminCode.INDENT + "rem"
     
     def emitIFACMPEQ(self, label):
         #label: Int

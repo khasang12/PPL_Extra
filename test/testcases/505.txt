@@ -1,5 +1,5 @@
 main: function void () {
-            a,b: integer = 1,2;
-            a = a-b;
+            a,b: integer = 6,2;
+            a = a%b;
             printInteger(a); // [a,b]
         }
