@@ -60,8 +60,7 @@ class CodeGenerator(Utils):
     
     def createRIG(self,lst,flow):
         allocator = GraphAllocator(lst,flow)
-        adj = allocator.flowToAdj()
-        print("\tAdj List from Flow:",adj)
+        allocator.flowToAdj()
         
         number_of_registers = 8
         done = 0;
@@ -72,7 +71,7 @@ class CodeGenerator(Utils):
                 allocator.reduceGraph()
         return {k: v-1 for k, v in zip(lst, allocator.color_global)}
 
-    def gen(self, ast, dir_):
+    def gen(self, ast, dir_, debug=False):
         # ast: AST
         # dir_: String
 
@@ -80,15 +79,17 @@ class CodeGenerator(Utils):
         
         
         id_list = self.createIdentifierList(ast)
-        print("Module 1 - Identifier Collector: \n\t",id_list)
-        
         unique_id_list, flow = self.handleLivenessDetection(id_list)
-        print("Module 2 - Liveness Analysis: \n\t","Unique IDs: ",unique_id_list, "\n\tFlow Graph: ",flow)
-        
-        print("Module 3 - Register Interference Graph:")
         id_map = self.createRIG(unique_id_list, flow)
-        print("\tRegister Mapping: ",id_map)
-        print("---------\n")
+        
+        if debug:
+            print("Module 1 - Identifier Collector: \n\t",id_list)
+            print("Module 2 - Liveness Analysis: \n\t","Unique IDs: ",unique_id_list, "\n\tFlow Graph: ",flow)
+            print("Module 3 - Register Interference Graph:")
+            print("\tRegister Mapping: ",id_map)
+            print("---------\n")
+        else:
+            print("OK")
         
         gc = CodeGenVisitor(ast, gl, dir_,id_map)
         gc.visit(ast, None)

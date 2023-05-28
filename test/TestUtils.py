@@ -180,7 +180,7 @@ class TestCodeGen():
             os.mkdir(path)
         f = open(os.path.join(soldir, str(num) + ".txt"),"w")
         try:
-            codeGen.gen(asttree, path)
+            codeGen.gen(asttree, path, False)
             # MIPS: use Jasmin as IC to generate
             proc = subprocess.Popen("java  -jar "+ MIPS_JAR + " " + path + "/MT22Class.asm",shell=True,stderr=subprocess.STDOUT,stdout = subprocess.PIPE)
             # Write the remaining output to the file object f

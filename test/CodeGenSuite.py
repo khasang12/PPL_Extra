@@ -6,7 +6,7 @@ from AST import *
 class CheckCodeGenSuite(unittest.TestCase):
     def test_add_simple(self):
         """simple addition"""
-        print("Test 500 - Simple Addition")
+        #print("Test 500 - Simple Addition")
         input = """main: function void () {
             a,b,c: integer = 1,2,3;
             b = c; // [c]
@@ -17,7 +17,7 @@ class CheckCodeGenSuite(unittest.TestCase):
         self.assertTrue(TestCodeGen.test(input,expect,500))
     def test_add_unused(self):
         """c is never used again -> no need to allocate"""
-        print("Test 501 - Unused Variable Addition: c")
+        #print("Test 501 - Unused Variable Addition: c")
         input = """main: function void () {
             a,b,c: integer = 1,2,3;
             d: integer = 4; // [a,b]
@@ -28,7 +28,7 @@ class CheckCodeGenSuite(unittest.TestCase):
         self.assertTrue(TestCodeGen.test(input,expect,501))
     def test_add_many_variables(self):
         """test num_vars(12) > num_regs(8)"""
-        print("Test 502 - Mega Variable Addition")
+        #print("Test 502 - Mega Variable Addition")
         input = """main: function void () {
             a,b,c: integer = 1,2,3; // [] [a] [a,b]
             d: integer = a + b; //d=3 [a,b,c]
@@ -46,7 +46,6 @@ class CheckCodeGenSuite(unittest.TestCase):
         expect = "7"
         self.assertTrue(TestCodeGen.test(input,expect,502))
     def test_minus_simple(self):
-        """simple addition"""
         input = """main: function void () {
             a,b: integer = 1,2;
             a = a-b;
@@ -55,7 +54,6 @@ class CheckCodeGenSuite(unittest.TestCase):
         expect = "-1"
         self.assertTrue(TestCodeGen.test(input,expect,503))
     def test_multiply_simple(self):
-        """simple addition"""
         input = """main: function void () {
             a,b: integer = 3,2;
             a = a*b;
@@ -64,7 +62,6 @@ class CheckCodeGenSuite(unittest.TestCase):
         expect = "6"
         self.assertTrue(TestCodeGen.test(input,expect,504)) 
     def test_div_simple(self):
-        """simple addition"""
         input = """main: function void () {
             a,b: integer = 6,2;
             a = a/b;
@@ -73,7 +70,6 @@ class CheckCodeGenSuite(unittest.TestCase):
         expect = "3"
         self.assertTrue(TestCodeGen.test(input,expect,505))
     def test_mod_simple(self):
-        """simple addition"""
         input = """main: function void () {
             a,b: integer = 6,2;
             a = a%b;
@@ -82,7 +78,6 @@ class CheckCodeGenSuite(unittest.TestCase):
         expect = "0"
         self.assertTrue(TestCodeGen.test(input,expect,505)) 
     def test_unary_int(self):
-        """simple addition"""
         input = """main: function void () {
             a: integer = -6;
             a = -a;
@@ -91,7 +86,6 @@ class CheckCodeGenSuite(unittest.TestCase):
         expect = "6"
         self.assertTrue(TestCodeGen.test(input,expect,506))
     def test_unary_bool(self):
-        """simple addition"""
         input = """main: function void () {
             a: boolean = true;
             a = !a;
@@ -100,7 +94,6 @@ class CheckCodeGenSuite(unittest.TestCase):
         expect = "0"
         self.assertTrue(TestCodeGen.test(input,expect,507)) 
     def test_binary_mixed_1(self):
-        """simple addition"""
         input = """main: function void () {
             a,b: integer = 1,2;
             a = a+b;
@@ -113,7 +106,6 @@ class CheckCodeGenSuite(unittest.TestCase):
         expect = "32"
         self.assertTrue(TestCodeGen.test(input,expect,508))
     def test_binary_mixed_1(self):
-        """simple addition"""
         input = """main: function void () {
             a,b: boolean = true, false;
             a = a && b;
@@ -375,7 +367,7 @@ class CheckCodeGenSuite(unittest.TestCase):
             b: integer = 10;
             while(b<15){
                 if(b>13)
-                    if(b>14){
+                    if(b>13){
                         break;
                     }
                 printInteger(b);
@@ -383,7 +375,7 @@ class CheckCodeGenSuite(unittest.TestCase):
             }
         }
         """
-        expect = "1011121314"
+        expect = "10111213"
         self.assertTrue(TestCodeGen.test(input,expect,528))
     def test529_break3(self):
         input = """

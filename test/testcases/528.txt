@@ -3,7 +3,7 @@
             b: integer = 10;
             while(b<15){
                 if(b>13)
-                    if(b>14){
+                    if(b>13){
                         break;
                     }
                 printInteger(b);

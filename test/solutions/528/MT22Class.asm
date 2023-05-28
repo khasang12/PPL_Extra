@@ -10,7 +10,7 @@ Label2:
 	sub $t0, $s0, $t0
 	slt $t1, $zero, $t0
 	beq $t1, $zero, Label6
-	li $t0, 14
+	li $t0, 13
 	sub $t0, $s0, $t0
 	slt $t1, $zero, $t0
 	beq $t1, $zero, Label8
